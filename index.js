@@ -18,10 +18,14 @@ connect()
 
 const app = express()
 const PORT = process.env.PORT || 3000 
-app.use(cors({ 
-    origin : "*",
-    credentials:true
-}))
+app.use(
+  cors({
+    origin: "https://edu-l4ie.onrender.com", // Replace with your frontend URL
+    credentials: true, // Allow credentials (cookies, auth headers)
+    methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 app.use(cookieParser())
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
