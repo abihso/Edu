@@ -20,7 +20,7 @@ const app = express()
 const PORT = process.env.PORT || 3000 
 app.use(
   cors({
-    origin: "https://edu-l4ie.onrender.com", // Replace with your frontend URL
+    origin: ["https://edu-l4ie.onrender.com", "http://localhost:4000"], // Replace with your frontend URL
     credentials: true, // Allow credentials (cookies, auth headers)
     methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
     allowedHeaders: ["Content-Type", "Authorization"],
