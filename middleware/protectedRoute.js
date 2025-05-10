@@ -18,7 +18,8 @@ export const verifyUserStudent = async (req,res,next) =>{
     res.sendStatus(401)
   }
 }
-export const verifyUserTeacher = async (req,res,next) =>{
+export const verifyUserTeacher = async (req, res, next) => {
+ 
   try {
     const token = req.cookies.token
     const verified = jwt.verify(token,process.env.JWT_SECRET)

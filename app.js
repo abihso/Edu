@@ -4,15 +4,15 @@ import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
 import File from "../models/File.js";
-
+ 
 const router = express.Router();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const ensureDirExists = (folder) => {
+const ensureDirExists = (folder) => { 
   if (!fs.existsSync(folder)) {
-    fs.mkdirSync(folder, { recursive: true });
+    fs.mkdirSync(folder, { recursive: true }); 
   }
 };
 
@@ -51,4 +51,4 @@ const fileFilter = (req, file, cb) => {
   cb(null, true);
 };
 
-const upload = multer({ storage, fileFilter });
+const upload = multer({ storage, fileFilter }); 

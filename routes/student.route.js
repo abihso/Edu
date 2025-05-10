@@ -9,6 +9,9 @@ import multer from "multer";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
+import { Assignment } from "../models/assignment-teacher.js"
+import { StudentMessage } from "../models/student-message.js"
+import { ExamsResults } from "../models/Results.model.js"
 const router = express.Router()
 
 
@@ -58,14 +61,19 @@ const storage = multer.diskStorage({
 
 router.post("/",upload.single("img"),async(req,res) => { 
   const data = req.body
-  console.log(req.path)
+  console.log("Visited")
   try {
     const findUser = await Student.findOne({email:data.email})
     if (findUser) return res.status(400).json({message : "user already exist"})
   } catch (error) {
     
   }
-  data.password =await hashpassword(data.fname) 
+  data.password = await hashpassword(data.fname) 
+ 
+  data.studentId = `STU${new Date().toISOString().slice(0, 4)}${Math.floor(
+    Math.random() * 100000000 + 20
+  )}`;
+  console.log(data)
   try {
     const createStudent = new Student({...data,img : req.file.filename})
     await createStudent.save()
@@ -75,7 +83,7 @@ router.post("/",upload.single("img"),async(req,res) => {
   }
 
 })
-router.post("/login/",async (req,res) => {
+router.post("/login/",async (req,res) => {     
   const data = req.body
     const findUser = await Student.findOne({email:data.email})
     if (!findUser) return res.status(400).json({message : "Invalid email or password"})
@@ -88,7 +96,9 @@ router.post("/login/",async (req,res) => {
   return res.status(200).json(findUser)
 })  
 router.get("/login-status",verifyUserStudent,(req,res) => {
-  return  res.sendStatus(200)
+  return res.status(200).json({
+    user : req.user
+  })
 
 })
 
@@ -114,10 +124,91 @@ router.post("/fees",async(req,res) => {
 })
 
 router.get("/profile-pic/:name",(req,res) => {
-  const {name} = req.params
-  console.log(__dirname)
-  const pathToFile = path.join(__dirname,"../uploads","students","images",name)
-  console.log(pathToFile)
-  return res.status(200).sendFile(pathToFile)
+  const { name } = req.params;
+  const pathToFile = path.join(
+    __dirname,
+    "../uploads",
+    "students",
+    "images",
+    name
+  );
+ 
+  return res.status(200).sendFile(pathToFile);
 })
+
+router.get("/assignment/:name", (req, res) => {
+  const { name } = req.params;
+  const pathToFile = path.join(
+    __dirname,
+    "../uploads",
+    "students",
+    "documents",
+    name
+  );
+  return res.status(200).sendFile(pathToFile);
+})
+router.get("/all-assignments/:class_name", async (req, res) => {
+  const { class_name } = req.params;
+  let findAssignments
+  try {
+     findAssignments = await Assignment.find({ class_name });
+  } catch (error) {
+     return res
+       .status(400)
+       .json({ message: "No assignments", success: false });
+  }
+  return res.status(200).json({...findAssignments})
+})
+router.get("/all-messages/:class_name", async (req, res) => {
+  const { class_name } = req.params;
+  let findStudentMessage;
+  try {
+    findStudentMessage = await StudentMessage.find({ class_name });
+  } catch (error) {
+    return res.status(400).json({ message: "No Messages", success: false });
+  }
+  return res.status(200).json({ ...findStudentMessage });
+});
+
+
+
+router.get("/grouped-results", async (req, res) => {
+  try {
+    const results = await ExamsResults.aggregate([
+      {
+        $lookup: {
+          from: "students",
+          localField: "studentid",
+          foreignField: "_id",
+          as: "student",
+        }, 
+      },
+      { $unwind: "$student" },
+      {
+        $group: { 
+          _id: "$academic_year",
+          students: {
+            $push: {
+              studentId: "$student._id",
+              fullName: {
+                $concat: ["$student.fname", " ", "$student.oname"],
+              },
+              class: "$class",
+              subject: "$subject",
+              term: "$term",
+              marks: "$marks",
+            },
+          },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    res.status(200).json(results);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+
 export default router

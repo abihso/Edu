@@ -17,7 +17,7 @@ import { fileURLToPath } from "url"
 connect()
 
 const app = express()
-const PORT = process.env.PORT || 3000
+const PORT = process.env.PORT || 3000 
 app.use(cors({ 
     origin : " http://localhost:5173",
     credentials:true
@@ -40,7 +40,7 @@ app.use("/api/general",generaRoutes)
 app.get("/api/logout",(req,res) => {
     res.cookie("token",{
         maxAge : 0
-    })
+    }) 
     return res.sendStatus(200)
 })
 const __dirname = path.resolve()
@@ -57,7 +57,7 @@ const __dirname = path.resolve()
 }));
 
 
-app.get("*", (req, res) => {
+app.get("*", (req, res) => { 
     const requestPath = req.originalUrl;
 
     // If it's requesting a JS file, prevent serving index.html
